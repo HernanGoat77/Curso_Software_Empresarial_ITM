@@ -6,7 +6,7 @@ app.use(express.json());
 const bd = require('./repositorio/bd');
 bd.conectar();
 
-const puerto = 8080;
+const puerto = 3030;
 
 require('./rutas/festivo.rutas')(app);
 

@@ -60,3 +60,60 @@ exports.validarFecha = async (req, res) => {
         return res.status(500).send("Error interno del servidor");
     }
 }
+
+exports.listarFestivosPorAnio = async (req, res) => {
+    const { anio } = req.params;
+    const añoNum = parseInt(anio);
+
+    if (isNaN(añoNum) || añoNum < 1900 || añoNum > 2100) {
+        return res.status(400).json({ mensaje: "Año no válido" });
+    }
+
+    try {
+        const { festivosFijos, festivosPuente } = await festivoRepo.obtenerFestivos();
+
+        let festivos = [];
+
+        festivosFijos.forEach(festivo => {
+            festivos.push({
+                festivo: festivo.nombre,
+                fecha: `${añoNum}-${String(festivo.mes).padStart(2, '0')}-${String(festivo.dia).padStart(2, '0')}`
+            });
+        });
+
+        const domingoRamos = servicioFechas.obtenerSemanaSanta(añoNum);
+        const domingoPascua = servicioFechas.agregarDias(domingoRamos, 7);
+
+        const festivosMoviles = [
+            { nombre: "Jueves Santo", fecha: servicioFechas.agregarDias(domingoPascua, -3) },
+            { nombre: "Viernes Santo", fecha: servicioFechas.agregarDias(domingoPascua, -2) },
+            { nombre: "Ascensión del Señor", fecha: servicioFechas.siguienteLunes(servicioFechas.agregarDias(domingoPascua, 40)) },
+            { nombre: "Corpus Christi", fecha: servicioFechas.siguienteLunes(servicioFechas.agregarDias(domingoPascua, 61)) },
+            { nombre: "Sagrado Corazón", fecha: servicioFechas.siguienteLunes(servicioFechas.agregarDias(domingoPascua, 68)) }
+        ];
+
+        festivosMoviles.forEach(festivo => {
+            festivos.push({
+                festivo: festivo.nombre,
+                fecha: `${festivo.fecha.getFullYear()}-${String(festivo.fecha.getMonth() + 1).padStart(2, '0')}-${String(festivo.fecha.getDate()).padStart(2, '0')}`
+            });
+        });
+
+        festivosPuente.forEach(festivo => {
+            let fechaFestivo = new Date(añoNum, festivo.mes - 1, festivo.dia);
+            let fechaTrasladada = servicioFechas.siguienteLunes(fechaFestivo);
+
+            festivos.push({
+                festivo: festivo.nombre,
+                fecha: `${fechaTrasladada.getFullYear()}-${String(fechaTrasladada.getMonth() + 1).padStart(2, '0')}-${String(fechaTrasladada.getDate()).padStart(2, '0')}`
+            });
+        });
+        festivos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+        return res.status(200).json(festivos);
+
+    } catch (error) {
+        console.error("Error obteniendo los festivos:", error);
+        return res.status(500).json({ mensaje: "Error interno del servidor" });
+    }
+};
