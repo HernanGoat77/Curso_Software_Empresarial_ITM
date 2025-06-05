@@ -1,5 +1,5 @@
 module.exports = {
-    SERVIDOR: '0.0.0.0',
+    SERVIDOR: '172.18.0.2',
     PUERTO: '27017',
     BASEDATOS: 'festivos',
     USUARIO: '',
