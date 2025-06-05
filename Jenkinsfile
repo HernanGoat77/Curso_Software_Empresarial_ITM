@@ -27,10 +27,12 @@ pipeline {
             steps {
                 script {
                     catchError(build:'SUCESS', stageResult: 'UNSTABLE'){
-                    bat '''
-                        docker ps -q --filter "name=dockerapifestivos" | findstr . && docker stop dockerapifestivos || echo No hay contenedor en ejecución
-                        docker ps -a -q --filter "name=dockerapifestivos" | findstr . && docker rm dockerapifestivos || echo No hay contenedor detenido
-                    '''
+                    bat """
+                    docker container inspect dockerapifestivos >nul 2>&1 && (
+                        docker container stop dockerapifestivos
+                        docker container rm dockerapifestivos
+                    ) || echo "No existe el contenedor 'dockerapifestivos'"
+                    """
                     }
                 }
             }
