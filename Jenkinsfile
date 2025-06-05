@@ -26,10 +26,12 @@ pipeline {
         stage('Detener Contenedor Anterior') {
             steps {
                 script {
+                    catchError(build:'SUCESS', stageResult: 'UNSTABLE'){
                     bat '''
                         docker ps -q --filter "name=dockerapifestivos" | findstr . && docker stop dockerapifestivos || echo No hay contenedor en ejecución
                         docker ps -a -q --filter "name=dockerapifestivos" | findstr . && docker rm dockerapifestivos || echo No hay contenedor detenido
                     '''
+                    }
                 }
             }
         }
