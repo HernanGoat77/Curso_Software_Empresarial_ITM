@@ -1,5 +1,5 @@
 module.exports = {
-    SERVIDOR: 'mongo',
+    SERVIDOR: 'dockerbdfestivos',
     PUERTO: '27017',
     BASEDATOS: 'festivos',
     USUARIO: '',
